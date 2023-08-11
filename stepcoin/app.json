@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "b32f5f98-f502-4c67-93cc-182387530343"
+      }
+    },
+    "android": {
+      "package": "com.dwkang1.stepcoin",
+      "googleServicesFile": "google-services.json"
+    },
+    "ios": {
+      "bundleIdentifier": "com.dwkang1.stepcoin",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
+  }
+}

@@ -1,14 +1,45 @@
-import * as firebase from 'firebase';
-import "firebase/firestore";
 
-//const app = firebase.initializeApp({
-//    apiKey: "AIzaSyBsp1kn1fm1Yq9HdyV4iEgZFJYNdFlFtbY",
-//    authDomain: "social-media-dev-db845.firebaseapp.com",
-//    projectId: "stepcoin-da7fc",
-//    storageBucket: "social-media-dev-db845.appspot.com",
-//    messagingSenderId: "857409291032",
-//    appId: "1:379640171639:web:6f41b2190d33766ddc0a72",
-//});
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import {getAuth} from "firebase/auth"
+import { getAnalytics } from "firebase/analytics";
+import { getDatabase } from 'firebase/database';
 
-//export const fireDB = app.firestore();
+import {
+    FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN,
+    FIREBASE_DB_URL,
+    FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID,
+    FIREBASE_MEASUREMENT_ID
+} from '@env'
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  databaseURL: FIREBASE_DB_URL,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID,
+  measurementId: FIREBASE_MEASUREMENT_ID
+};
+
+
+// Initialize Firebase
+app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const analytics = getAnalytics(app);
+const db = getDatabase(app);
+
+export {auth, analytics, db}
+
 //export default app;
