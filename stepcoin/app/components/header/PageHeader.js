@@ -1,13 +1,11 @@
 import React, {useContext, useState} from 'react';
 import {Text, View, Button, TouchableOpacity, Platform, Dimensions} from 'react-native'
-import tw from 'twrnc'
 
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from "react-i18next";
 
 import { Entypo } from '@expo/vector-icons';
 
-import userInfoContext from '../../context/user-info-context';
 import ModalContainer from '../modal-container/ModalContainer';
 import LanguageSelect from '../form-input/language-select';
 
@@ -18,9 +16,6 @@ function PageHeader({}) {
     const { t, i18n } = useTranslation();
 
     //user info
-    const userContext = useContext(userInfoContext)
-    const {wallet} = userContext
-    const {balance} = wallet
 
     const [modalVisible, setModalVisible] = useState(false)
 
@@ -33,8 +28,8 @@ function PageHeader({}) {
     const heightTW = aspectRatio > 2.1 ? 'pt-14' : 'pt-8'
 
     const receiveLanguage = (language) => {
-        //set language in useContext
-        userContext.setLanguage(language)
+        //set language in redux
+        
         //pass language selection to i18n
         i18n.changeLanguage(language.value);
         //clsoe modal
@@ -42,8 +37,8 @@ function PageHeader({}) {
     }
 
     return (
-        <View style={tw`flex flex-row items-center justify-between border-b border-black z-50 bg-white ${heightTW}`}>
-            <View style={tw`flex pl-4 py-2`}>
+        <View className={`flex flex-row items-center justify-between border-b border-black z-50 bg-white ${heightTW}`}>
+            <View className={`flex pl-4 py-2`}>
                 <CustomButton 
                     onPress={() => {setModalVisible(true)}}
                 >
@@ -51,13 +46,13 @@ function PageHeader({}) {
                 </CustomButton>
             </View>
 
-            <View style={tw`flex ml-auto pr-4 py-2`}>
+            <View className={`flex ml-auto pr-4 py-2`}>
                 <TouchableOpacity
-                    style={tw`rounded-full py-1 px-2 bg-green-600 shadow-md`}
+                    className={`rounded-full py-1 px-2 bg-green-600 shadow-md`}
                     onPress={() => navigation.navigate('coin-history')}
                 >
-                    <Text style={tw`text-white font-bold`}>
-                        {balance} Coins
+                    <Text className={`text-white font-bold`}>
+                        000 Coins
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -68,7 +63,7 @@ function PageHeader({}) {
 
                     <LanguageSelect 
                         selectHandler={receiveLanguage}
-                        defaultValue={userContext.language}
+                        devaultValue='English' //change later to variable
                     />
 
                 </View>

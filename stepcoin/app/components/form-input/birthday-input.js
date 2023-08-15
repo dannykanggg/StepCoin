@@ -1,7 +1,6 @@
 import React,{useState,useEffect} from 'react'
 
 import { View,Text } from 'react-native'
-import tw from 'twrnc'
 
 import SelectDropdown from 'react-native-select-dropdown'
 
@@ -53,8 +52,8 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
 
 
     return (
-        <View style={tw`flex flex-row`}>
-            <View style={tw`flex flex-col`}>
+        <View className='flex flex-row'>
+            <View className-='flex flex-col'>
                 <Text>Month</Text>
                 <SelectDropdown 
                     data={monthOptions}
@@ -69,10 +68,10 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={tw`w-24`}
+                    buttonStyle={{width: '6rem'}}
                 />
             </View>
-            <View style={tw`flex flex-col`}>
+            <View className='flex flex-col'>
                 <Text>Day</Text>
                 <SelectDropdown 
                     data={dayOptions}
@@ -87,10 +86,10 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={tw`w-24`}
+                    buttonStyle={{width: '6rem'}}
                 />
             </View>
-            <View style={tw`flex flex-col`}>
+            <View className='flex flex-col'>
                 <Text>Month</Text>
                 <SelectDropdown 
                     data={yearOptions}
@@ -105,7 +104,8 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={tw`w-36`}
+                    buttonStyle={{width: '9rem'}}
+
                 />
             </View>
         </View>

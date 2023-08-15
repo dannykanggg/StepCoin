@@ -1,35 +1,54 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { StyleSheet,View, Text, Button, ScrollView } from 'react-native'
-import tw from 'twrnc';
 //import * as Keychain from 'react-native-keychain'
 import * as SecureStore from 'expo-secure-store'
 import { useIsFocused } from "@react-navigation/native";
 
-
-import userInfoContext from '../../context/user-info-context';
 
 import PageHeader from '../../components/header/PageHeader';
 
 import { ScreenView, BodyView } from '../../components/view-container/view-container';
 //import colors from '../../config/colors';
 
+//redux
+import { useSelector, useDispatch } from 'react-redux'
+import { userState, userLogout } from '../../store/userSlice';
+import { profileLogout } from '../../store/profileSlice';
+
 
 export default function AccountScreen({ navigation }) {
-  const isFocused = useIsFocused();
-  const userContext = useContext(userInfoContext)
-  const {loginState, user, userProfile, wallet} = userContext
 
+  //redux
+  const dispatch = useDispatch()
+  const user = useSelector(userState)
+
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  const isFocused = useIsFocused();
+
+  
   useEffect(() => {
     if (isFocused) {
       //redirect to login-register if not logged in
-      if (!loginState) {
+      //change login condition to uid
+      const {data} = user
+      const {email} = data
+
+      if (!email) {
         navigation.navigate('login-register')
+      } else {
+        setLoggedIn(true)
       }
     }
-  },[isFocused, userContext])
+  },[isFocused])
 
   const logoutHandler = () => {
-    userContext.logout()
+    //logout redux
+    //userLogout
+    dispatch(userLogout())
+    
+    //profileLogout
+    dispatch(profileLogout())
     navigation.navigate('steps')
   }
 
@@ -40,57 +59,57 @@ export default function AccountScreen({ navigation }) {
       <PageHeader/>
 
 
-      <BodyView style={tw`px-3`}>
+      <BodyView className='px-3'>
 
-        <Text style={tw` text-xl font-bold p-4 text-black `}>My Page</Text>
-        <View style={tw`flex flex-col gap-4`}>
-          { loginState ? 
+        <Text className=' text-xl font-bold p-4 text-black '>My Page</Text>
+        <View className='flex flex-col gap-4'>
+          { loggedIn ? 
             <>
-              <View style={tw`flex flex-col`}>
+              <View className='flex flex-col'>
                 <Text>Email: </Text>
-                <View style={tw`flex flex-row`}>
-                  <Text>{user.email}</Text>
-                  <Text style={tw`ml-auto`}>edit</Text>
+                <View className='flex flex-row'>
+                  <Text>{user.email ? user.email : 'nothing'}</Text>
+                  <Text className='ml-auto'>edit</Text>
                 </View>
               </View>
 
-              <View style={tw`flex flex-col`}>
+              <View className='flex flex-col'>
                 <Text>Password</Text>
-                <View style={tw`flex flex-row`}>
+                <View className='flex flex-row'>
                   <Text>*********</Text>
-                  <Text style={tw`ml-auto`}>edit</Text>
+                  <Text className='ml-auto'>edit</Text>
                 </View>
               </View>
 
-              <View style={tw`flex flex-col`}>
+              <View className='flex flex-col'>
                 <Text>Birthday</Text>
-                <View style={tw`flex flex-row`}>
-                  <Text>{userProfile.birthday}</Text>
-                  <Text style={tw`ml-auto`}>edit</Text>
+                <View className='flex flex-row'>
+                  <Text>birthday</Text>
+                  <Text className='ml-auto'>edit</Text>
                 </View>
               </View>
 
-              <View style={tw`flex flex-col`}>
+              <View className='flex flex-col'>
                 <Text>Gender</Text>
-                <View style={tw`flex flex-row`}>
-                  <Text>{userProfile.gender}</Text>
-                  <Text style={tw`ml-auto`}>edit</Text>
+                <View className='flex flex-row'>
+                  <Text>gender</Text>
+                  <Text className='ml-auto'>edit</Text>
                 </View>
               </View>
             </>
             : 
-            <View style={tw`w-1/2`}>
+            <View className='w-1/2'>
             </View>
           }
         </View>
 
-        <View style={tw`flex flex-col`}>
+        <View className='flex flex-col'>
           <Text>Help(Link to FAQ website)</Text>
           <Text>Private Policy</Text>
         </View>
 
-        { userContext.user.loggedIn ?
-          <View style={tw`flex flex-row`}>
+        { loggedIn ?
+          <View className='flex flex-row'>
             <Button
               onPress={() => logoutHandler()}
               title="Log Out"
