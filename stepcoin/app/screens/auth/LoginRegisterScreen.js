@@ -1,13 +1,13 @@
 import React, {useState, useEffect} from 'react'
 import {View, Text, Button, KeyboardAvoidingView, TextInput} from 'react-native'
-import tw from 'twrnc'
 //import Constants from "expo-constants";
-import axios from 'axios'
+
 
 //import {process.env.EXPO_PUBLIC_BACKEND_IP} from '@env'
 
 import { ScreenView, BodyView } from '../../components/view-container/view-container'
 import { EmailInput } from '../../components/form-input/email-input';
+import { PasswordInput } from '../../components/form-input/password-input'
 import { SimpleButton, CustomButton } from '../../components/button/button';
 import { isEmailValid } from '../../helpers/input-validations';
 import { SimpleBanner } from '../../components/banner/banner'
@@ -18,8 +18,21 @@ import LoadingOverlay from '../../components/loadingOverlay'
 
 import MascotBunny from '../../assets/mascot/mascot_bunny.svg'
 
+//redux & firestore
+import { useSelector, useDispatch } from 'react-redux'
+import { userLogin, userRegister, userState } from '../../store/userSlice'
+import { profileState, registerWallet, profileLogin } from '../../store/profileSlice'
+import { collection, query, where } from "firebase/firestore";
+
+import { auth } from '../../../firebase';
+
 
 export default function LoginRegisterScreen({navigation}) {
+    //redux 
+    const dispatch = useDispatch()
+    const user = useSelector(userState)
+    const profile = useSelector(profileState)
+
     //error&loading state
     const [state, setState] = useState({
         loading: false,
@@ -28,6 +41,7 @@ export default function LoginRegisterScreen({navigation}) {
     })
 
     const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     
     //error validation
     const [errors, setErrors] = useState({})
@@ -35,6 +49,8 @@ export default function LoginRegisterScreen({navigation}) {
         const errors = {};
         if (!email) { errors.email = 'fill in email'}
         if (!isEmailValid(email)) {errors.email='Email is invalid'}
+        if (!password) { errors.password = 'fill in password'}
+        if (password.length<6) {errors.password="password must be more than 6 characters"}
 
         return errors
     }
@@ -52,7 +68,6 @@ export default function LoginRegisterScreen({navigation}) {
 
 
     const handleSubmit = async() => {
-
         //validation
         const errors = validateData();
         if (Object.keys(errors).length) {
@@ -60,71 +75,68 @@ export default function LoginRegisterScreen({navigation}) {
             return;
         }
         setErrors({})
+        
+        setState({loading:  true, response: null, error: null})
+        //register dispatch
+        const response = await dispatch(userLogin({email:email, password:password}))
+        const {error, payload} = response
+        
+        // login success handler
+        if (payload) {
+            //get user Profile information
+            const {uid} = payload
+            dispatch(profileLogin(uid))
 
-        //loading state
-        setState({ loading: true, response: null, error: null})
+            //navigate to steps screen
+            navigation.navigate('steps')
+        } else if (error.code.includes('wrong-password')) {
+            //wrong password handler
+            setErrors({...errors, password: 'wrong password'})
+        }  
+        else if (error.code.includes('user-not-found')) {
+            //no user. register handler
+            console.log("new user register")
+            //register dispatch
+            dispatch(userRegister({email:email, password:password}))
+                .then(response => {
+                    const {payload} = response
+                    const {uid} = payload
+                    //get uid & register wallet
+                    dispatch(registerWallet(uid))
+                    
+                    //route to about you
+                    navigation.navigate('about-you')
+                })
+                .catch(error => {
+                    console.log("user register error")
+                    //add banner?
+                    setState({...state, error: "Error registering user. Try again later."})
+                })
+        }
+        //all fail. set network error
+        else {
+            setState({...state, error: 'Network Error'})
+        }
 
-        //get ip address of running app
-        //const { manifest } = Constants;
-        //const api = (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
-        //    ? manifest.debuggerHost.split(`:`).shift().concat(`:3000`)
-        //    : `api.example.com`;
-
-        // check if email is in DB
-        const config = {headers: {'Content-type': 'Application/json', Accept: 'Application/json'}}
-        console.log(process.env.EXPO_PUBLIC_BACKEND_IP)
-        axios.get(`${process.env.EXPO_PUBLIC_BACKEND_IP}/api/users/check-user-exists/${email}`, config)
-            .then(res => {
-                const {data, status} = res
-
-                //user exists, login
-                if (data['user-exists']==='true') {
-                    setState({ loading: false, response: null, error: null })
-                    //navigate to login
-                    navigation.navigate('password',{
-                        email:email,
-                        type:'login'
-                    })
-                } else {
-                //no user, navigate to register
-                    setState({ loading: false, response: null, error: null })
-                    //navigate to register
-                    navigation.navigate('password',{
-                        email:email,
-                        type:'register'
-                    })
-                }
-            })
-            .catch(error => {
-                //add alert for error?
-                console.log("LoginRegisterScreen.js : error connecting axios")
-                console.log(error)
-                console.log(Object.keys(error))
-                console.log(error.response)
-                console.log(error.name)
-                console.log(error.code)
-                console.log(error.message)
-                setState({ loading: false, response: null, error: "error connecting to axios" })
-            })
-
+        setState({loading: false, response: null, error: null})
     }
 
     return (
-        <ScreenView style={tw``}>
+        <ScreenView >
             <BackHeader page='steps'/>
 
             <BodyView>
                 {state.error ? <SimpleBanner status='error' title={state.error} /> : <></>}
 
-                <View style={tw`my-8 flex justify-center items-center`}>
-                    <MascotBunny width={300} height={300} />
+                <View className='my-8 flex justify-center items-center'>
+                    <MascotBunny width={250} height={250} />
                 </View>
 
-                <Text style={tw`text-2xl font-bold`}>
+                <Text className='text-2xl font-bold'>
                     Login or Register
                 </Text>
 
-                <View style={tw`w-full flex flex-col gap-3`}>
+                <View className='w-full flex flex-col gap-3'>
 
                     <SimpleButton 
                         title="Continue with Apple"
@@ -134,17 +146,28 @@ export default function LoginRegisterScreen({navigation}) {
                     />
                 </View>
 
-                <View style={tw`flex flex-row w-full gap-2`}>
+                <View className='flex flex-row w-full gap-2'>
                     <Text>OR</Text>
                 </View>
 
-                <KeyboardAvoidingView style={tw`my-3 flex flex-col gap-10 w-full`}>
+                <KeyboardAvoidingView className='my-2 flex flex-col gap-10 w-full'>
                     <EmailInput
                         value={email}
                         onChangeText={setEmail}
                         error={errors.email}
                     />
                 </KeyboardAvoidingView>
+                <KeyboardAvoidingView className='my-2 flex flex-col gap-10 w-full'>
+                    <PasswordInput
+                        value={password}
+                        onChangeText={setPassword}
+                        error={errors.password}
+                    />
+                </KeyboardAvoidingView>
+
+                <View>
+                    <Text>Reset Password</Text>
+                </View>
 
                 <View className='px-3 my-3'>
                     <CustomButton 

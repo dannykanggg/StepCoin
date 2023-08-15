@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {Button, TouchableOpacity, Text} from 'react-native'
 
-import tw from 'twrnc';
 
 //props:
 //children, color variant, etc.
@@ -11,10 +10,10 @@ import tw from 'twrnc';
 export function SimpleButton({title,style, ...props}) {
     return (
         <TouchableOpacity
-            style={[tw`py-2 px-3 rounded-md bg-blue-500 flex items-center`,style]}
+            className={'py-2 px-3 rounded-md bg-blue-500 flex items-center ' + style}
             {...props}
         >
-            <Text style={tw`text-white text-lg`}>
+            <Text className='text-white text-lg'>
                 {title}
             </Text>
             
@@ -34,10 +33,9 @@ SimpleButton.defaultProps = {
     title: 'Button'
 }
 
-export function CustomButton({children,style, ...props}) {
+export function CustomButton({children, ...props}) {
     return (
         <TouchableOpacity
-            style={[tw``,style]}
             {...props}
         >
             {children}

@@ -1,15 +1,14 @@
 import React from 'react'
 import { View, ScrollView } from 'react-native'
-import tw from 'twrnc'
 
 //screenview
 //bodyview
 
 
-export function ScreenView({children, style, ...props}) {
+export function ScreenView({children, className, ...props}) {
   return (
     <View 
-      style={[tw`flex flex-1`, style]}
+      className={`flex flex-1 `+ className }
       {...props}
     >
       {children}
@@ -17,10 +16,10 @@ export function ScreenView({children, style, ...props}) {
   )
 }
 
-export function BodyView({children, style, ...props}) {
+export function BodyView({children, className, ...props}) {
   return (
     <ScrollView
-      style={[tw``, style]}
+      className={className}
       {...props}
     >
       {children}

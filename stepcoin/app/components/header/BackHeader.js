@@ -1,6 +1,5 @@
 import React, {useContext, useState} from 'react';
 import {Text, View, Button, TouchableOpacity, Platform, Dimensions} from 'react-native'
-import tw from 'twrnc'
 
 import { useNavigation } from '@react-navigation/native';
 
@@ -16,8 +15,8 @@ function BackHeader({page}) {
     const heightTW = aspectRatio > 2.1 ? 'pt-14' : 'pt-8'
 
     return (
-        <View style={tw`flex flex-row items-center justify-between border-b border-black z-50 bg-white ${heightTW}`}>
-            <View style={tw`flex pl-4 py-2`}>
+        <View className={`flex flex-row items-center justify-between border-b border-black z-50 bg-white ${heightTW}`}>
+            <View className='flex pl-4 py-2'>
                 <CustomButton 
                     onPress={() => {page ? navigation.navigate(page) : navigation.goBack()}}
                 >
@@ -25,7 +24,7 @@ function BackHeader({page}) {
                 </CustomButton>
             </View>
 
-            <View style={tw`flex ml-auto pr-4 py-2`}>
+            <View className='flex ml-auto pr-4 py-2'>
             </View>
         </View>
     )

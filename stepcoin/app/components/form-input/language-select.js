@@ -2,8 +2,6 @@ import React,{useMemo, useState, useEffect} from 'react'
 
 import RadioButtonRN from 'radio-buttons-react-native';
 
-import tw from 'twrnc'
-
 
 export default function LanguageSelect({selectHandler,defaultValue, ...props}) {
     const choices = useMemo(() => ([
@@ -35,9 +33,8 @@ export default function LanguageSelect({selectHandler,defaultValue, ...props}) {
                 data={choices}
                 //initial={gender}
                 selectedBtn = {(val) => setSelected(val)}
-                style={tw``}
+                {...props}
             />
-
         </>
     )
 }
