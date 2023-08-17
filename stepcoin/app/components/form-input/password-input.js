@@ -10,9 +10,8 @@ export function PasswordInput({value, title, placeholder, error, ...props}) {
   return (
     <View className='flex flex-col gap-3 w-full'>
       {title ? <Text className='font-semibold text-gray-500'>{title}</Text> : <></>}
-        
         <TextInput
-            className={'border border-gray-500 rounded-lg px-2 py-4 w-full' + errorStyle}
+            className={`border border-gray-500 rounded-lg px-2 py-4 w-full ` + errorStyle}
             placeholder={placeholder}
             value={value}
             keyboardType='default'

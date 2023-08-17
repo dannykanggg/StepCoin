@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import {getAuth} from "firebase/auth"
 import { getFirestore } from "firebase/firestore";
 
+import { GoogleAuthProvider, signInWithRedirect} from "firebase/auth"
 
 import {
     FIREBASE_API_KEY,
@@ -33,12 +34,14 @@ const firebaseConfig = {
 };
 
 
+/**==================== */
 // Initialize Firebase
 app = initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Initialize Firebase Auth provider
+const provider = new GoogleAuthProvider(app);
 
-export {auth, db}
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-//export default app;
+export const signInWithGoogleRedirect = () => signInWithRedirect(auth, provider);

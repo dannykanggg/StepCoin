@@ -2,23 +2,39 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { auth } from '../../firebase';
-import { signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+
+import { 
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider, signInWithCredential
+} from 'firebase/auth';
+
 
 
 export const userRegister = createAsyncThunk('user/userRegister',
   async(registerData) => {
     const response = await createUserWithEmailAndPassword(auth, registerData.email, registerData.password)
     const user = response.user
-    return {email:user.email, token:user.stsTokenManager.accessToken, uid:user.uid}
+    return {email:user.email, token:user.stsTokenManager.accessToken, uid:user.uid, signInMethod: 'password'}
 });
-
 
 export const userLogin = createAsyncThunk('user/userLogin',
   async (loginData) => {
     const userCredential = await signInWithEmailAndPassword(auth, loginData.email, loginData.password)
     const user = userCredential.user
-    return {email:user.email, token:user.stsTokenManager.accessToken, uid:user.uid}
+    return {email:user.email, token:user.stsTokenManager.accessToken, uid:user.uid, signInMethod: 'password'}
 });
+
+
+export const googleLogin = createAsyncThunk('user/googleLogin',
+  async(idToken) => {
+    //create a google credential with the token
+    const googleCredential = await GoogleAuthProvider.credential(idToken.idToken)
+    //sign in firebase with credential
+    const response = await signInWithCredential(auth, googleCredential)
+    const { email, oauthIdToken, localId } = response._tokenResponse
+    return {email: email, token: oauthIdToken, uid: localId, signInMethod: 'google.com'}
+})
 
 
 export const userLogout = createAsyncThunk('user/userLogout',
@@ -39,19 +55,6 @@ const userSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    //builder.addCase(initAnonymousUser.pending, (state) => {
-    //  state.status = 'loading'
-    //})
-    //builder.addCase(initAnonymousUser.fulfilled, (state, action) => {
-    //  state.status = 'fulfilled'
-    //  state.data = action.payload
-    //  state.error = ''
-    //})
-    //builder.addCase(initAnonymousUser.rejected, (state, action) => {
-    //  state.status = 'error'
-    //  state.error = action.error.message
-    //})
-
     builder.addCase(userRegister.pending, (state) => {
       state.status='loading'
     })
@@ -74,6 +77,19 @@ const userSlice = createSlice({
       state.error = ''
     })
     builder.addCase(userLogin.rejected, (state, action) => {
+      state.status = 'error'
+      state.error = action.error.message
+    })
+
+    builder.addCase(googleLogin.pending, (state) => {
+      state.status= 'loading'
+    })
+    builder.addCase(googleLogin.fulfilled, (state,action)=> {
+      state.status = 'fulfilled'
+      state.data = action.payload
+      state.error = ''
+    })
+    builder.addCase(googleLogin.rejected, (state, action) => {
       state.status = 'error'
       state.error = action.error.message
     })

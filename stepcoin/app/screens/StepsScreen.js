@@ -26,11 +26,13 @@ import { profileState, initWallet } from '../store/profileSlice';
 //translations
 import { useTranslation } from "react-i18next";
 
+
 export default function StepsScreen({ navigation }) {
   //redux 
   const dispatch = useDispatch()
   const user = useSelector(userState)
   const profile = useSelector(profileState)
+
 
   //initialize anonymous user
   useEffect(() => {

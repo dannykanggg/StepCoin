@@ -86,6 +86,7 @@ const AboutYouScreen = ({route,navigation}) => {
 
     // need stack navigation
     return (
+        <>
         <ScreenView className='px-2 py-14'>
             {state.error ? <SimpleBanner status='error' title={state.error} /> : <></>}
 
@@ -118,8 +119,10 @@ const AboutYouScreen = ({route,navigation}) => {
                     title="Finish"
                 />
             </BodyView>
-            {/*state.loading && <LoadingOverlay/>*/}
         </ScreenView>
+        {state.loading && <LoadingOverlay/>}
+        </>
+
     )
 }
 

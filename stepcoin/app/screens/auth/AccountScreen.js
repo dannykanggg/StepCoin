@@ -9,6 +9,8 @@ import PageHeader from '../../components/header/PageHeader';
 
 import { ScreenView, BodyView } from '../../components/view-container/view-container';
 //import colors from '../../config/colors';
+import LoadingOverlay from '../../components/loadingOverlay';
+
 
 //redux
 import { useSelector, useDispatch } from 'react-redux'
@@ -16,16 +18,23 @@ import { userState, userLogout } from '../../store/userSlice';
 import { profileLogout } from '../../store/profileSlice';
 
 
-export default function AccountScreen({ navigation }) {
 
+
+export default function AccountScreen({ navigation }) {
   //redux
   const dispatch = useDispatch()
   const user = useSelector(userState)
 
+  //error&loading state
+  const [state, setState] = useState({
+    loading: false,
+    response: null,
+    error: null
+  })
+
   const [loggedIn, setLoggedIn] = useState(false)
 
   const isFocused = useIsFocused();
-
   
   useEffect(() => {
     if (isFocused) {
@@ -43,24 +52,23 @@ export default function AccountScreen({ navigation }) {
   },[isFocused])
 
   const logoutHandler = () => {
-    //logout redux
+    setState({loading:  true, response: null, error: null})
     //userLogout
     dispatch(userLogout())
     
     //profileLogout
     dispatch(profileLogout())
+
+    setState({loading: false, response: null, error: null})
     navigation.navigate('steps')
   }
 
   //if not logged in, ad login & register buttons
   return (
+    <>
     <ScreenView>
-
       <PageHeader/>
-
-
       <BodyView className='px-3'>
-
         <Text className=' text-xl font-bold p-4 text-black '>My Page</Text>
         <View className='flex flex-col gap-4'>
           { loggedIn ? 
@@ -118,10 +126,11 @@ export default function AccountScreen({ navigation }) {
           </View>
           : <></>
         }
-
-    </BodyView>
-
+      </BodyView>
     </ScreenView>
+    {state.loading && <LoadingOverlay/>}
+    </>
+
   )
 }
 
