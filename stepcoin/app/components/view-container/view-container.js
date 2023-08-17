@@ -8,7 +8,7 @@ import { View, ScrollView } from 'react-native'
 export function ScreenView({children, className, ...props}) {
   return (
     <View 
-      className={`flex flex-1 `+ className }
+      className={`flex flex-1`+ className }
       {...props}
     >
       {children}
@@ -18,11 +18,13 @@ export function ScreenView({children, className, ...props}) {
 
 export function BodyView({children, className, ...props}) {
   return (
-    <ScrollView
-      className={className}
-      {...props}
-    >
-      {children}
+    <ScrollView >
+      <View 
+        className={className}
+        {...props}
+      >
+        {children}
+      </View>
     </ScrollView>
   )
 }

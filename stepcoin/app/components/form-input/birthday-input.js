@@ -53,7 +53,7 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
 
     return (
         <View className='flex flex-row'>
-            <View className-='flex flex-col'>
+            <View className-='flex flex-col border border-black'>
                 <Text>Month</Text>
                 <SelectDropdown 
                     data={monthOptions}
@@ -68,7 +68,7 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={{width: '6rem'}}
+                    buttonStyle={{width: 96}}
                 />
             </View>
             <View className='flex flex-col'>
@@ -86,11 +86,11 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={{width: '6rem'}}
+                    buttonStyle={{width: 96}}
                 />
             </View>
             <View className='flex flex-col'>
-                <Text>Month</Text>
+                <Text>Year</Text>
                 <SelectDropdown 
                     data={yearOptions}
                     onSelect={(val, index) => setBirthday((prev) => ({...prev, year:val}))}
@@ -104,7 +104,7 @@ export default function BirthdayInput({birthday, setBirthday, ...props}) {
                         // if data array is an array of objects then return item.property to represent item in dropdown
                         return item
                     }}
-                    buttonStyle={{width: '9rem'}}
+                    buttonStyle={{width: 144}}
 
                 />
             </View>
