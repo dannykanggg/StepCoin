@@ -3,13 +3,13 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { db, auth } from "../../firebase";
 import { doc, setDoc } from "firebase/firestore"; 
 
-import { collection, getDoc, where } from "firebase/firestore";
+import { collection, getDoc, addDoc} from "firebase/firestore";
 
 
 export const registerWallet = createAsyncThunk('profile/registerWallet', 
     async (uid, {getState}) => {
         const {profile, user} = getState()
-        const {balance, last_sync, last_update} = profile.data.wallet
+        const {balance, lastSync, lastUpdate} = profile.data.wallet
 
         //set doc in collection 'profile'
         const profileRef = collection(db, "profile");
@@ -18,7 +18,7 @@ export const registerWallet = createAsyncThunk('profile/registerWallet',
             //uid: uid,
             wallet: {
                 balance: balance,
-                lastUpdate: last_update
+                lastUpdate: lastUpdate
             }
         }, {merge: true})
 
@@ -26,7 +26,7 @@ export const registerWallet = createAsyncThunk('profile/registerWallet',
         const currDateTime = new Date().toLocaleString(undefined, {hourCycle:'h24'});
         return {...profile.data, wallet: {...profile.data.wallet, 
             balance: balance,
-            last_sync: currDateTime
+            lastSync: currDateTime
         }}
     }
 )
@@ -43,12 +43,11 @@ export const profileLogin = createAsyncThunk('profile/profileLogin',
         const currDateTime = new Date().toLocaleString(undefined, {hourCycle:'h24'});
         return {...profile.data, wallet: {...profile.data.wallet,
             balance: wallet.balance,
-            last_sync: currDateTime,
-            last_update: wallet.lastUpdate
+            lastSync: currDateTime,
+            lastUpdate: wallet.lastUpdate
         }}
     }
 )
-
 
 export const profileUpdate = createAsyncThunk('profile/profileUpdate',
     // update any profile variables except wallet
@@ -76,8 +75,68 @@ export const profileUpdate = createAsyncThunk('profile/profileUpdate',
 )
 
 
+export const addTransaction = createAsyncThunk('profile/addTransaction',
+    //assumes signed in
+
+    //add transaction to server & update wallet
+    async (transactionData, {getState, rejectWithValue}) => {
+        const {profile, user} = getState()
+        const profileData = profile.data
+        const userData = user.data
+
+        const {email, uid} = userData
+        const {wallet} = profileData
+        if (!email) {
+            return rejectWithValue('user not logged in')
+        }
+        
+        //set doc - Transaction
+        const transactionRef = collection(db, 'transactions');
+        const currDateTime = new Date().toLocaleString(undefined, {hourCycle:'h24'});
+        
+        //send transaction to server
+        const transactionResponse = await addDoc(transactionRef, {
+            email: email,
+            amount: transactionData.amount,
+            type: transactionData.type,
+            timestamp: currDateTime
+        })
+
+        //if transaction succeeds, add to wallet & send new balance back
+        const {id} = transactionResponse
+        let newBalance;
+        if (id) {
+            newBalance = wallet.balance + transactionData.amount
+            const profileRef = collection(db, "profile");
+            try {
+                const response = await setDoc(doc(profileRef, uid), {
+                    wallet: {
+                        balance: newBalance,
+                        lastUpdate: currDateTime
+                    }
+                }, {merge: true})
+            } catch(error) {
+                //if wallet update fails, roll back transaction as well.
+                console.log("error updating wallet. rollback transaction")
+                return rejectWithValue("updating wallet failed.")
+            }
+        } else {
+            return rejectWithValue("transaction failed.")
+        }
+
+        //everything succeeded. add changes to redux
+        return {...profileData, wallet: {
+            balance: newBalance,
+            lastUpdate: currDateTime,
+            lastSync: currDateTime
+        }}
+    }
+)
+
+
+
 const initialState = {data:{}, error:''};
-//{gender, birthday, wallet:{balance,last_update, last_sync}}
+//{gender, birthday, wallet:{balance,lastUpdate, lastSync}}
 
 const profileSlice = createSlice({
     name: 'profile',
@@ -88,8 +147,8 @@ const profileSlice = createSlice({
             const currDateTime = new Date().toLocaleString(undefined, {hourCycle:'h24'});
             state.data = {wallet: {
                 balance: 0,
-                last_update: currDateTime,
-                last_sync: currDateTime
+                lastUpdate: currDateTime,
+                lastSync: currDateTime
             }}
         },
         profileLogout: (state) => {
@@ -133,7 +192,20 @@ const profileSlice = createSlice({
         })
         builder.addCase(profileUpdate.rejected, (state, action) => {
             state.status = 'error'
-            state.data = action.error.message
+            state.error = action.error.message
+        })
+
+        builder.addCase(addTransaction.pending, (state) => {
+            state.status = 'pending'
+        })
+        builder.addCase(addTransaction.fulfilled, (state, action) => {
+            state.status = 'fulfilled'
+            state.data = action.payload
+            state.error = ''
+        })
+        builder.addCase(addTransaction.rejected, (state, action) => {
+            state.status = 'error'
+            state.error = action.payload
         })
 
     }
