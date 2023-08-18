@@ -19,7 +19,7 @@ import CircularProgress from 'react-native-circular-progress-indicator';
 //redux
 import { useDispatch, useSelector } from 'react-redux';
 import { userState } from '../store/userSlice';
-import { profileState, initWallet } from '../store/profileSlice';
+import { profileState, initWallet, addTransaction } from '../store/profileSlice';
 //admob
 //import { GAMBannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; 
 
@@ -39,7 +39,7 @@ export default function StepsScreen({ navigation }) {
     console.log("user data updated")
     console.log(user)
   },[user])
-
+ 
   //initialize profile
   useEffect(() => {
     console.log("profile updated")
@@ -54,12 +54,27 @@ export default function StepsScreen({ navigation }) {
   //translations
   const { t, i18n } = useTranslation();
 
-  const adReward = () => {
-    //userContext.addBalance(60)
+  const adReward = async () => {
+    //dispatch action
+    try {
+      const response = await dispatch(addTransaction({
+        amount: 60,
+        type: 'watchAd'
+      }))
+    } catch(error) {
+      //try except?
+      //if response.error.message=='Rejected', display response.payload for reason
+      console.log("error with adReward")
+      console.log(error)
+      //setState(P)
+    }
   }
 
-  const noAdReward = () => {
-    //userContext.addBalance(10)
+  const noAdReward = async() => {
+    const response = await dispatch(addTransaction({
+      amount: 10,
+      type: 'noAd'
+    }))
   }
 
   const bgImage = require('../assets/background.jpeg')
