@@ -12,8 +12,8 @@ import MascotBunny from '../assets/mascot/mascot_bunny.svg'
 import Tank from '../assets/tank/70.svg'
 import Coin from '../assets/coin-icon/09.svg'
 
+//components
 import { SimpleButton, CustomButton } from '../components/button/button';
-
 import CircularProgress from 'react-native-circular-progress-indicator';
 
 //redux
@@ -22,6 +22,7 @@ import { userState } from '../store/userSlice';
 import { profileState, initWallet, addTransaction } from '../store/profileSlice';
 //admob
 //import { GAMBannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'; 
+
 
 //translations
 import { useTranslation } from "react-i18next";
@@ -56,16 +57,16 @@ export default function StepsScreen({ navigation }) {
 
   const adReward = async () => {
     //dispatch action
-    try {
-      const response = await dispatch(addTransaction({
-        amount: 60,
-        type: 'watchAd'
-      }))
-    } catch(error) {
-      //try except?
-      //if response.error.message=='Rejected', display response.payload for reason
+    const response = await dispatch(addTransaction({
+      amount: 60,
+      type: 'watchAd'
+    }))
+
+    //addTransaction failure handler
+    const {message} = response.error
+    if (message) {
       console.log("error with adReward")
-      console.log(error)
+      console.log(message)
       //setState(P)
     }
   }
@@ -75,6 +76,14 @@ export default function StepsScreen({ navigation }) {
       amount: 10,
       type: 'noAd'
     }))
+
+    //addTransaction failure handler
+    const {message} = response.error
+    if (message) {
+      console.log("error with adReward")
+      console.log(message)
+      //setState(P)
+    }
   }
 
   const bgImage = require('../assets/background.jpeg')

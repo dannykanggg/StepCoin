@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { db, auth } from "../../firebase";
 import { doc, setDoc } from "firebase/firestore"; 
 
-import { collection, getDoc, addDoc} from "firebase/firestore";
+import { collection, getDoc, addDoc, deleteDoc} from "firebase/firestore";
 
 
 export const registerWallet = createAsyncThunk('profile/registerWallet', 
@@ -76,38 +76,44 @@ export const profileUpdate = createAsyncThunk('profile/profileUpdate',
 
 
 export const addTransaction = createAsyncThunk('profile/addTransaction',
-    //assumes signed in
-
     //add transaction to server & update wallet
     async (transactionData, {getState, rejectWithValue}) => {
+        //get current state
         const {profile, user} = getState()
         const profileData = profile.data
         const userData = user.data
-
         const {email, uid} = userData
         const {wallet} = profileData
+
+        //if not signed in, reject for now
         if (!email) {
             return rejectWithValue('user not logged in')
         }
         
-        //set doc - Transaction
+        //get DB collection & variables
         const transactionRef = collection(db, 'transactions');
+        const profileRef = collection(db, "profile");
+
+        //current datetime 
         const currDateTime = new Date().toLocaleString(undefined, {hourCycle:'h24'});
         
-        //send transaction to server
-        const transactionResponse = await addDoc(transactionRef, {
-            email: email,
-            amount: transactionData.amount,
-            type: transactionData.type,
-            timestamp: currDateTime
-        })
-
-        //if transaction succeeds, add to wallet & send new balance back
-        const {id} = transactionResponse
-        let newBalance;
-        if (id) {
+        //send transaction to firestore
+        try {
+            //if transaction succeeds, add to wallet & send new balance back
+            const transactionResponse = await addDoc(transactionRef, {
+                email: email,
+                amount: transactionData.amount,
+                type: transactionData.type,
+                timestamp: currDateTime
+            })
+            const {id} = transactionResponse
+            console.log("transaction ID")
+            console.log(id)
+            //calculate new wallet balance 
+            let newBalance;
             newBalance = wallet.balance + transactionData.amount
-            const profileRef = collection(db, "profile");
+
+            //update wallet in backend with new balance
             try {
                 const response = await setDoc(doc(profileRef, uid), {
                     wallet: {
@@ -115,21 +121,36 @@ export const addTransaction = createAsyncThunk('profile/addTransaction',
                         lastUpdate: currDateTime
                     }
                 }, {merge: true})
+
             } catch(error) {
                 //if wallet update fails, roll back transaction as well.
-                console.log("error updating wallet. rollback transaction")
+                console.log("error updating wallet. remove tranasaction from server")
+                const docRef = doc(db, 'transaction', id)
+
+                //delete transaction and return error
+                deleteDoc(doc(db, 'transaction', id))
+                    .then((response) => {
+                        console.log("transaciton deleted")
+                    })
+                    .catch((error) => {
+                        console.log('transaction delete failed')
+                        console.log(error)
+                    })
                 return rejectWithValue("updating wallet failed.")
             }
-        } else {
+
+            //everything succeeded. add changes to redux profile state
+            return {...profileData, wallet: {
+                balance: newBalance,
+                lastUpdate: currDateTime,
+                lastSync: currDateTime
+            }}
+
+        } catch(error) {
+            //transaction send to firestore failed
+            console.log("transaction failed.")
             return rejectWithValue("transaction failed.")
         }
-
-        //everything succeeded. add changes to redux
-        return {...profileData, wallet: {
-            balance: newBalance,
-            lastUpdate: currDateTime,
-            lastSync: currDateTime
-        }}
     }
 )
 
